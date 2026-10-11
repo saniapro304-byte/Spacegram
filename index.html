@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spacegram — Мессенджер нового поколения</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        space: {
+                            950: '#0a0e17',
+                            900: '#0d1322',
+                            800: '#151d30',
+                            700: '#1e293b',
+                        },
+                        accent: {
+                            DEFAULT: '#6366f1',
+                            hover: '#4f46e5',
+                            purple: '#8b5cf6'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS Styles & Glow Effects -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0e17;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-panel-hover:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(99, 102, 241, 0.4);
+            box-shadow: 0 0 30px rgba(99, 102, 241, 0.15);
+        }
+
+        .glow-button {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            box-shadow: 0 0 25px rgba(99, 102, 241, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .glow-button:hover {
+            transform: scale(1.03);
+            box-shadow: 0 0 35px rgba(139, 92, 246, 0.6);
+        }
+
+        .glow-text {
+            text-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+        }
+
+        .bg-mesh {
+            background-image: 
+                radial-gradient(circle at 15% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 85% 80%, rgba(139, 92, 246, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.8) 0%, #0a0e17 100%);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0e17;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6366f1;
+        }
+
+        /* Animation classes */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* FAQ transition */
+        .faq-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out;
+        }
+        .faq-item.active .faq-content {
+            max-height: 200px;
+        }
+        .faq-item.active svg {
+            transform: rotate(45deg);
+        }
+    </style>
+</head>
+<body class="bg-space-950 text-white bg-mesh min-h-screen relative selection:bg-accent selection:text-white">
+
+    <!-- ХЕДЕР -->
+    <header class="fixed top-0 left-0 right-0 z-50 glass-panel border-b border-white/10 px-4 lg:px-12 py-4 transition-all duration-300">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <!-- Логотип -->
+            <a href="#" class="flex items-center gap-2 group">
+                <div class="w-10 h-10 rounded-xl glow-button flex items-center justify-center text-xl transition-transform group-hover:scale-110">
+                    🚀
+                </div>
+                <span class="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-indigo-200 to-accent bg-clip-text text-transparent">
+                    Spacegram
+                </span>
+            </a>
+
+            <!-- Навигация (десктоп) -->
+            <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
+                <a href="#hero" class="hover:text-white transition-colors" data-i18n="nav_home">Главная</a>
+                <a href="#features" class="hover:text-white transition-colors" data-i18n="nav_features">Возможности</a>
+                <a href="#pricing" class="hover:text-white transition-colors" data-i18n="nav_pricing">Тарифы</a>
+                <a href="#faq" class="hover:text-white transition-colors" data-i18n="nav_support">Поддержка</a>
+            </nav>
+
+            <!-- Правая часть: Язык, Тема, Кнопки -->
+            <div class="flex items-center gap-3">
+                <!-- Переключатель языка -->
+                <button id="langToggle" class="px-3 py-1.5 rounded-full text-xs font-semibold glass-panel text-slate-300 hover:text-white transition-colors">
+                    RU
+                </button>
+
+                <!-- Переключатель темы -->
+                <button id="themeToggle" class="w-9 h-9 rounded-full glass-panel flex items-center justify-center text-slate-300 hover:text-white transition-colors" aria-label="Сменить тему">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                </button>
+
+                <!-- Кнопка Войти -->
+                <button onclick="redirectToTarget()" class="hidden sm:inline-flex px-4 py-2 rounded-full text-sm font-medium glass-panel text-slate-200 hover:text-white transition-colors">
+                    <span data-i18n="btn_login">Войти</span>
+                </button>
+
+                <!-- Кнопка Регистрация -->
+                <a href="https://saniapro304-byte.github.io/my-side/" class="px-5 py-2 rounded-full text-sm font-semibold glow-button text-white inline-block">
+                    <span data-i18n="btn_register">Регистрация</span>
+                </a>
+
+                <!-- Мобильное меню гамбургер -->
+                <button id="mobileMenuBtn" class="md:hidden p-2 text-slate-300 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Мобильное меню -->
+        <div id="mobileMenu" class="hidden md:hidden pt-4 pb-2 border-t border-white/10 mt-4 flex flex-col gap-3">
+            <a href="#hero" class="mobile-link text-slate-300 hover:text-white py-1" data-i18n="nav_home">Главная</a>
+            <a href="#features" class="mobile-link text-slate-300 hover:text-white py-1" data-i18n="nav_features">Возможности</a>
+            <a href="#pricing" class="mobile-link text-slate-300 hover:text-white py-1" data-i18n="nav_pricing">Тарифы</a>
+            <a href="#faq" class="mobile-link text-slate-300 hover:text-white py-1" data-i18n="nav_support">Поддержка</a>
+            <button onclick="redirectToTarget()" class="w-full py-2 rounded-full glass-panel text-center text-sm font-medium mt-2" data-i18n="btn_login">Войти</button>
+        </div>
+    </header>
+
+    <!-- HERO-СЕКЦИЯ -->
+    <section id="hero" class="relative pt-32 pb-20 md:pt-44 md:pb-32 px-4 lg:px-12 flex items-center justify-center">
+        <div class="max-w-5xl mx-auto text-center relative z-10">
+            <!-- Большая иконка с glow -->
+            <div class="inline-flex items-center justify-center w-24 h-24 rounded-3xl glow-button text-4xl mb-8 animate-bounce duration-1000">
+                🚀
+            </div>
+
+            <!-- Заголовок в 2 строки -->
+            <h1 class="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-tight mb-6">
+                <span class="block text-white" data-i18n="hero_title_1">Общайся больше.</span>
+                <span class="block bg-gradient-to-r from-accent via-indigo-400 to-accent-purple bg-clip-text text-transparent glow-text" data-i18n="hero_title_2">Побеждай с Spacegram.</span>
+            </h1>
+
+            <!-- Подзаголовок -->
+            <p class="text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed" data-i18n="hero_subtitle">
+                Подними своё общение на новый уровень. Скорость, приватность и стиль — всё уже внутри.
+            </p>
+
+            <!-- Кнопки CTA -->
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="https://saniapro304-byte.github.io/my-side/" class="w-full sm:w-auto px-8 py-4 rounded-full font-bold text-base glow-button text-white flex items-center justify-center gap-2">
+                    <span data-i18n="hero_btn_create">Создать аккаунт</span>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </a>
+                <a href="#features" class="w-full sm:w-auto px-8 py-4 rounded-full font-semibold text-base glass-panel glass-panel-hover text-slate-200 flex items-center justify-center">
+                    <span data-i18n="hero_btn_docs">Документация</span>
+                </a>
+            </div>
+
+            <!-- Статистика доверия под Hero -->
+            <div class="mt-16 grid grid-cols-2 md:grid-cols-3 gap-6 max-w-3xl mx-auto pt-10 border-t border-white/10">
+                <div class="glass-panel p-4 rounded-2xl">
+                    <div class="text-2xl lg:text-3xl font-extrabold text-accent">500K+</div>
+                    <div class="text-xs text-slate-400 mt-1" data-i18n="stat_active">Активных пользователей</div>
+                </div>
+                <div class="glass-panel p-4 rounded-2xl">
+                    <div class="text-2xl lg:text-3xl font-extrabold text-accent-purple">0.01с</div>
+                    <div class="text-xs text-slate-400 mt-1" data-i18n="stat_speed">Скорость доставки</div>
+                </div>
+                <div class="col-span-2 md:col-span-1 glass-panel p-4 rounded-2xl">
+                    <div class="text-2xl lg:text-3xl font-extrabold text-white">100%</div>
+                    <div class="text-xs text-slate-400 mt-1" data-i18n="stat_secure">Шифрование данных</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- СЕКЦИЯ ВОЗМОЖНОСТЕЙ -->
+    <section id="features" class="py-24 px-4 lg:px-12 relative">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center max-w-3xl mx-auto mb-16 reveal">
+                <span class="text-accent text-sm font-semibold uppercase tracking-widest px-4 py-1.5 rounded-full bg-accent/10 border border-accent/20" data-i18n="features_tag">Возможности</span>
+                <h2 class="text-3xl sm:text-5xl font-extrabold mt-4 mb-4" data-i18n="features_title">Потрясающие возможности</h2>
+                <p class="text-slate-400 text-lg" data-i18n="features_subtitle">Каждая функция — часть общей картины. Мессенджер для тех, кто ценит скорость и приватность.</p>
+            </div>
+
+            <!-- Сетка карточек -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Карточка 1 -->
+                <div class="glass-panel glass-panel-hover p-8 rounded-3xl transition-all duration-300 reveal">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 flex items-center justify-center text-2xl mb-6">
+                        ⚡
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-white" data-i18n="feat_1_title">Мгновенные сообщения</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed" data-i18n="feat_1_desc">Realtime передача данных без задержек. Ваши сообщения доставляются со скоростью света.</p>
+                </div>
+
+                <!-- Карточка 2 -->
+                <div class="glass-panel glass-panel-hover p-8 rounded-3xl transition-all duration-300 reveal">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 flex items-center justify-center text-2xl mb-6">
+                        🔒
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-white" data-i18n="feat_2_title">Приватность</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed" data-i18n="feat_2_desc">Ghost-режим, сквозное E2E шифрование и защита PIN-кодом для максимальной конфиденциальности.</p>
+                </div>
+
+                <!-- Карточка 3 -->
+                <div class="glass-panel glass-panel-hover p-8 rounded-3xl transition-all duration-300 reveal">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 flex items-center justify-center text-2xl mb-6">
+                        📸
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-white" data-i18n="feat_3_title">Статусы</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed" data-i18n="feat_3_desc">Публикуйте яркие моменты на 24 часа: фото, видео и интерактивный текст с реакциями.</p>
+                </div>
+
+                <!-- Карточка 4 -->
+                <div class="glass-panel glass-panel-hover p-8 rounded-3xl transition-all duration-300 reveal">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 flex items-center justify-center text-2xl mb-6">
+                        🎨
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-white" data-i18n="feat_4_title">Темы оформления</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed" data-i18n="feat_4_desc">Более 9 уникальных тем интерфейса под любое настроение: от киберпанка до неона.</p>
+                </div>
+
+                <!-- Карточка 5 -->
+                <div class="glass-panel glass-panel-hover p-8 rounded-3xl transition-all duration-300 reveal">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 flex items-center justify-center text-2xl mb-6">
+                        👑
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-white" data-i18n="feat_5_title">Plus-подписка</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed" data-i18n="feat_5_desc">Эксклюзивные анимированные стикеры, премиальные бейджи и увеличенные лимиты файлов.</p>
+                </div>
+
+                <!-- Карточка 6 -->
+                <div class="glass-panel glass-panel-hover p-8 rounded-3xl transition-all duration-300 reveal">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 flex items-center justify-center text-2xl mb-6">
+                        🤖
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-white" data-i18n="feat_6_title">Боты и моды</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed" data-i18n="feat_6_desc">Интеграция StalkerGram, GhostGram, AntiDelete и кастомных ботов прямо в один клик.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- СЕКЦИЯ С КАРТИНКОЙ ПРИЛОЖЕНИЯ -->
+    <section class="py-20 px-4 lg:px-12 relative overflow-hidden">
+        <div class="max-w-7xl mx-auto">
+            <div class="glass-panel p-8 sm:p-12 rounded-3xl border border-white/10 relative reveal">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <span class="text-accent text-sm font-semibold uppercase tracking-widest px-4 py-1.5 rounded-full bg-accent/10 border border-accent/20" data-i18n="app_tag">Интерфейс</span>
+                        <h2 class="text-3xl sm:text-4xl font-extrabold mt-4 mb-6" data-i18n="app_title">Все под контролем</h2>
+                        <p class="text-slate-300 text-base mb-8 leading-relaxed" data-i18n="app_desc">
+                            Интуитивный дизайн объединяет скорость и эргономику. Управляйте чатами, статусами и правами администратора в пару кликов на любом устройстве.
+                        </p>
+                        <ul class="space-y-4">
+                            <li class="flex items-center gap-3 text-slate-200">
+                                <div class="w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center text-accent font-bold">✓</div>
+                                <span data-i18n="app_feat_1">Синхронизация чатов в реальном времени</span>
+                            </li>
+                            <li class="flex items-center gap-3 text-slate-200">
+                                <div class="w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center text-accent font-bold">✓</div>
+                                <span data-i18n="app_feat_2">Расширенная панель администратора каналов</span>
+                            </li>
+                            <li class="flex items-center gap-3 text-slate-200">
+                                <div class="w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center text-accent font-bold">✓</div>
+                                <span data-i18n="app_feat_3">Персонализированный профиль и кастомные статусы</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Мокап интерфейса -->
+                    <div class="relative">
+                        <div class="absolute -inset-1 rounded-3xl bg-gradient-to-r from-accent to-accent-purple opacity-30 blur-xl"></div>
+                        <div class="relative bg-space-900 rounded-2xl border border-white/10 p-4 shadow-2xl">
+                            <!-- Окно мокапа браузера -->
+                            <div class="flex items-center justify-between pb-3 mb-4 border-b border-white/10">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
+                                    <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+                                    <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
+                                </div>
+                                <div class="px-4 py-1 rounded-lg bg-space-950 text-xs text-slate-400 font-mono">app.spacegram.io/chat</div>
+                                <div class="text-xs text-slate-500">v3.2</div>
+                            </div>
+                            <!-- Контент мокапа -->
+                            <div class="grid grid-cols-3 gap-3">
+                                <div class="col-span-1 bg-space-950/80 rounded-xl p-3 flex flex-col gap-2">
+                                    <div class="h-8 rounded-lg bg-white/5 flex items-center px-2 text-xs text-slate-400">🔍 Поиск...</div>
+                                    <div class="p-2 rounded-lg bg-accent/20 border border-accent/30 text-xs font-medium">💬 Spacegram Team</div>
+                                    <div class="p-2 rounded-lg bg-white/5 text-xs text-slate-400">🚀 Alpha Developers</div>
+                                    <div class="p-2 rounded-lg bg-white/5 text-xs text-slate-400">🌌 Cyber Lounge</div>
+                                </div>
+                                <div class="col-span-2 bg-space-950/80 rounded-xl p-4 flex flex-col justify-between h-48 sm:h-60">
+                                    <div class="space-y-3">
+                                        <div class="flex items-start gap-2">
+                                            <div class="w-7 h-7 rounded-full bg-accent flex items-center justify-center text-xs font-bold">SG</div>
+                                            <div class="bg-white/5 p-2 rounded-xl text-xs text-slate-200 max-w-[80%]">Добро пожаловать в Spacegram! 🚀 Как настроение?</div>
+                                        </div>
+                                        <div class="flex items-start gap-2 justify-end">
+                                            <div class="bg-accent text-white p-2 rounded-xl text-xs max-w-[80%]">Всё супер, тестируем новый релиз! 🔥</div>
+                                        </div>
+                                    </div>
+                                    <div class="pt-2 border-t border-white/10 flex items-center justify-between text-xs text-slate-400">
+                                        <span>Написать сообщение...</span>
+                                        <span class="text-accent font-bold">➤</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- СЕКЦИЯ ТАРИФОВ -->
+    <section id="pricing" class="py-24 px-4 lg:px-12 relative">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center max-w-3xl mx-auto mb-16 reveal">
+                <span class="text-accent text-sm font-semibold uppercase tracking-widest px-4 py-1.5 rounded-full bg-accent/10 border border-accent/20" data-i18n="pricing_tag">Тарифы</span>
+                <h2 class="text-3xl sm:text-5xl font-extrabold mt-4 mb-4" data-i18n="pricing_title">Выберите свой уровень</h2>
+                <p class="text-slate-400 text-lg" data-i18n="pricing_subtitle">Простые и прозрачные цены для каждого пользователя.</p>
+            </div>
+
+            <!-- Карточки тарифов -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+                <!-- Free -->
+                <div class="glass-panel p-8 rounded-3xl flex flex-col justify-between reveal">
+                    <div>
+                        <h3 class="text-xl font-bold mb-2">Free</h3>
+                        <p class="text-slate-400 text-sm mb-6" data-i18n="plan_free_desc">Для ежедневного базового общения с друзьями.</p>
+                        <div class="text-4xl font-extrabold mb-6">0₽ <span class="text-sm font-normal text-slate-400" data-i18n="plan_forever">навсегда</span></div>
+                        <ul class="space-y-4 mb-8 text-sm text-slate-300">
+                            <li class="flex items-center gap-3">✓ Базовые чаты и звонки</li>
+                            <li class="flex items-center gap-3">✓ Статусы на 24 часа</li>
+                            <li class="flex items-center gap-3">✓ 3 темы оформления</li>
+                            <li class="flex items-center gap-3 text-slate-500">✕ Эксклюзивные стикеры</li>
+                        </ul>
+                    </div>
+                    <a href="https://saniapro304-byte.github.io/my-side/" class="w-full text-center py-3 rounded-full font-semibold glass-panel glass-panel-hover text-white text-sm block" data-i18n="plan_btn_free">Начать бесплатно</a>
+                </div>
+
+                <!-- Plus (Выделен) -->
+                <div class="glass-panel p-8 rounded-3xl flex flex-col justify-between relative border-2 border-accent shadow-[0_0_40px_rgba(99,102,241,0.25)] bg-space-900/80 reveal scale-105">
+                    <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-xs font-bold glow-button text-white uppercase tracking-wider" data-i18n="plan_popular">
+                        Популярный
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold mb-2">Plus</h3>
+                        <p class="text-slate-400 text-sm mb-6" data-i18n="plan_plus_desc">Для тех, кто хочет максимум возможностей и стиля.</p>
+                        <div class="text-4xl font-extrabold mb-6">299₽ <span class="text-sm font-normal text-slate-400" data-i18n="plan_month">/ мес</span></div>
+                        <ul class="space-y-4 mb-8 text-sm text-slate-200">
+                            <li class="flex items-center gap-3">✓ Всё из Free тарифа</li>
+                            <li class="flex items-center gap-3">✓ Премиальные анимированные стикеры</li>
+                            <li class="flex items-center gap-3">✓ 9+ тем оформления (Киберпанк, Неон)</li>
+                            <li class="flex items-center gap-3">✓ Бейдж Plus в профиле</li>
+                        </ul>
+                    </div>
+                    <a href="https://saniapro304-byte.github.io/my-side/" class="w-full text-center py-3 rounded-full font-semibold glow-button text-white text-sm block" data-i18n="plan_btn_plus">Выбрать Plus</a>
+                </div>
+
+                <!-- Creator -->
+                <div class="glass-panel p-8 rounded-3xl flex flex-col justify-between reveal">
+                    <div>
+                        <h3 class="text-xl font-bold mb-2">Creator</h3>
+                        <p class="text-slate-400 text-sm mb-6" data-i18n="plan_creator_desc">Для блогеров, админов каналов и создателей контента.</p>
+                        <div class="text-4xl font-extrabold mb-6">999₽ <span class="text-sm font-normal text-slate-400" data-i18n="plan_month">/ мес</span></div>
+                        <ul class="space-y-4 mb-8 text-sm text-slate-300">
+                            <li class="flex items-center gap-3">✓ Всё из Plus тарифа</li>
+                            <li class="flex items-center gap-3">✓ Кастомный верифицированный бейдж</li>
+                            <li class="flex items-center gap-3">✓ Приоритетная поддержка 24/7</li>
+                            <li class="flex items-center gap-3">✓ Инструменты аналитики каналов</li>
+                        </ul>
+                    </div>
+                    <a href="https://saniapro304-byte.github.io/my-side/" class="w-full text-center py-3 rounded-full font-semibold glass-panel glass-panel-hover text-white text-sm block" data-i18n="plan_btn_creator">Выбрать Creator</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- СЕКЦИЯ FAQ -->
+    <section id="faq" class="py-24 px-4 lg:px-12 relative">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center max-w-2xl mx-auto mb-16 reveal">
+                <span class="text-accent text-sm font-semibold uppercase tracking-widest px-4 py-1.5 rounded-full bg-accent/10 border border-accent/20" data-i18n="faq_tag">FAQ</span>
+                <h2 class="text-3xl sm:text-5xl font-extrabold mt-4 mb-4" data-i18n="faq_title">Ощущается так же, как и выглядит</h2>
+                <p class="text-slate-400 text-lg" data-i18n="faq_subtitle">Дизайн, который ощущается естественным. Ведь комфорт — это не только про интерфейс.</p>
+            </div>
+
+            <!-- Аккордеон -->
+            <div class="space-y-4 reveal">
+                <!-- Вопрос 1 -->
+                <div class="glass-panel rounded-2xl overflow-hidden faq-item transition-all duration-300">
+                    <button onclick="toggleFaq(this)" class="w-full p-6 text-left flex items-center justify-between font-bold text-lg text-white hover:text-accent transition-colors">
+                        <span data-i18n="faq_q1">Какие ОС поддерживаются?</span>
+                        <svg class="w-6 h-6 transform transition-transform duration-300 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    </button>
+                    <div class="faq-content px-6 pb-6 text-slate-300 text-sm leading-relaxed" data-i18n="faq_a1">
+                        Web, Android, iOS. Работает везде где есть современный браузер без установки лишнего софта.
+                    </div>
+                </div>
+
+                <!-- Вопрос 2 -->
+                <div class="glass-panel rounded-2xl overflow-hidden faq-item transition-all duration-300">
+                    <button onclick="toggleFaq(this)" class="w-full p-6 text-left flex items-center justify-between font-bold text-lg text-white hover:text-accent transition-colors">
+                        <span data-i18n="faq_q2">Как часто выходят обновления?</span>
+                        <svg class="w-6 h-6 transform transition-transform duration-300 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    </button>
+                    <div class="faq-content px-6 pb-6 text-slate-300 text-sm leading-relaxed" data-i18n="faq_a2">
+                        Каждую неделю. Новые фичи, багфиксы, улучшения безопасности и оптимизация скорости работы.
+                    </div>
+                </div>
+
+                <!-- Вопрос 3 -->
+                <div class="glass-panel rounded-2xl overflow-hidden faq-item transition-all duration-300">
+                    <button onclick="toggleFaq(this)" class="w-full p-6 text-left flex items-center justify-between font-bold text-lg text-white hover:text-accent transition-colors">
+                        <span data-i18n="faq_q3">Возможен ли возврат средств?</span>
+                        <svg class="w-6 h-6 transform transition-transform duration-300 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    </button>
+                    <div class="faq-content px-6 pb-6 text-slate-300 text-sm leading-relaxed" data-i18n="faq_a3">
+                        Да, в течение 14 дней без лишних вопросов вернем полную сумму подписки, если вам что-то не понравится.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Кнопки под FAQ -->
+            <div class="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 reveal">
+                <a href="https://saniapro304-byte.github.io/my-side/" class="px-8 py-4 rounded-full font-bold glow-button text-white text-sm inline-block" data-i18n="hero_btn_create">Создать аккаунт</a>
+                <button onclick="redirectToTarget()" class="px-8 py-4 rounded-full font-semibold glass-panel glass-panel-hover text-slate-200 text-sm" data-i18n="faq_btn_support">У меня остались вопросы</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA СЕКЦИЯ -->
+    <section class="py-20 px-4 lg:px-12 relative">
+        <div class="max-w-5xl mx-auto glass-panel p-10 sm:p-16 rounded-3xl text-center relative overflow-hidden reveal border border-accent/30 shadow-[0_0_50px_rgba(99,102,241,0.2)]">
+            <div class="absolute -right-20 -bottom-20 w-64 h-64 bg-accent/20 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -left-20 -top-20 w-64 h-64 bg-accent-purple/20 rounded-full blur-3xl pointer-events-none"></div>
+            
+            <h2 class="text-3xl sm:text-5xl font-black mb-4" data-i18n="cta_title">Готов начать?</h2>
+            <p class="text-slate-400 text-lg max-w-xl mx-auto mb-8" data-i18n="cta_subtitle">Присоединяйся к тысячам пользователей Spacegram уже сегодня.</p>
+            <a href="https://saniapro304-byte.github.io/my-side/" class="px-10 py-4 rounded-full font-extrabold text-lg glow-button text-white inline-flex items-center gap-3">
+                <span data-i18n="cta_btn">Создать аккаунт бесплатно</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </a>
+        </div>
+    </section>
+
+    <!-- ФУТЕР -->
+    <footer class="border-t border-white/10 bg-space-900 py-16 px-4 lg:px-12">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-5 gap-10">
+            <!-- Бренд -->
+            <div class="md:col-span-2">
+                <a href="#" class="flex items-center gap-2 mb-4">
+                    <div class="w-8 h-8 rounded-lg glow-button flex items-center justify-center text-sm">🚀</div>
+                    <span class="text-lg font-bold text-white">Spacegram</span>
+                </a>
+                <p class="text-slate-400 text-sm max-w-sm mb-6 leading-relaxed" data-i18n="footer_desc">
+                    Мессенджер нового поколения для тех, кто ценит максимальную скорость, абсолютную приватность и премиальный стиль.
+                </p>
+                <div class="text-xs text-slate-500">© 2026 Spacegram. <span data-i18n="footer_rights">Все права защищены.</span></div>
+            </div>
+
+            <!-- Колонка 1 -->
+            <div>
+                <h4 class="font-bold text-sm mb-4 text-white uppercase tracking-wider" data-i18n="footer_col1_title">Продукт</h4>
+                <ul class="space-y-2.5 text-sm text-slate-400">
+                    <li><a href="#features" class="hover:text-white transition-colors" data-i18n="nav_features">Возможности</a></li>
+                    <li><a href="#pricing" class="hover:text-white transition-colors" data-i18n="nav_pricing">Тарифы</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">Безопасность</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">Обновления</a></li>
+                </ul>
+            </div>
+
+            <!-- Колонка 2 -->
+            <div>
+                <h4 class="font-bold text-sm mb-4 text-white uppercase tracking-wider" data-i18n="footer_col2_title">Компания</h4>
+                <ul class="space-y-2.5 text-sm text-slate-400">
+                    <li><a href="#" class="hover:text-white transition-colors" data-i18n="footer_about">О нас</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors" data-i18n="footer_careers">Карьера <span class="text-xs px-2 py-0.5 rounded-full bg-accent/20 text-accent ml-1">We're hiring</span></a></li>
+                    <li><a href="#" class="hover:text-white transition-colors" data-i18n="footer_press">Пресс-кит</a></li>
+                </ul>
+            </div>
+
+            <!-- Колонка 3 -->
+            <div>
+                <h4 class="font-bold text-sm mb-4 text-white uppercase tracking-wider" data-i18n="footer_col3_title">Поддержка</h4>
+                <ul class="space-y-2.5 text-sm text-slate-400">
+                    <li><a href="#faq" class="hover:text-white transition-colors" data-i18n="nav_support">Помощь (FAQ)</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors" data-i18n="footer_contact">Контакты</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors" data-i18n="footer_privacy">Конфиденциальность</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <!-- МОДАЛЬНОЕ ОКНО АВТОРИЗАЦИИ / РЕГИСТРАЦИИ -->
+    <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md hidden">
+        <div class="glass-panel p-8 rounded-3xl w-full max-w-md relative border border-white/10 shadow-2xl animate-in fade-in zoom-in duration-200">
+            <button onclick="closeModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-slate-400 hover:text-white transition-colors">✕</button>
+            
+            <!-- Табы модалки -->
+            <div class="flex gap-4 mb-6 border-b border-white/10 pb-4">
+                <button id="tabLogin" onclick="switchTab('login')" class="font-bold text-lg text-white border-b-2 border-accent pb-1" data-i18n="modal_tab_login">Вход</button>
+                <button id="tabRegister" onclick="switchTab('register')" class="font-bold text-lg text-slate-400 pb-1 hover:text-white transition-colors" data-i18n="modal_tab_register">Регистрация</button>
+            </div>
+
+            <!-- Форма -->
+            <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-4">
+                <div id="nameFieldContainer" class="hidden">
+                    <label class="block text-xs font-semibold text-slate-400 mb-1.5 uppercase" data-i18n="modal_name">Ваше имя</label>
+                    <input type="text" id="userName" class="w-full bg-space-950 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-accent" placeholder="Иван Иванов">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1.5 uppercase" data-i18n="modal_email">Электронная почта</label>
+                    <input type="email" id="userEmail" required class="w-full bg-space-950 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-accent" placeholder="name@example.com">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1.5 uppercase" data-i18n="modal_password">Пароль</label>
+                    <input type="password" id="userPassword" required class="w-full bg-space-950 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-accent" placeholder="••••••••">
+                </div>
+                <button type="submit" id="authSubmitBtn" class="w-full py-3.5 rounded-xl font-bold glow-button text-white text-sm mt-2" data-i18n="modal_btn_login">Войти в Spacegram</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ТОСТ УВЕДОМЛЕНИЕ -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 glass-panel px-6 py-3 rounded-2xl border border-accent/40 text-sm text-white shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300">
+        Успешно выполнено!
+    </div>
+
+    <!-- СКРИПТЫ И ИНТЕРАКТИВНОСТЬ -->
+    <script>
+        const TARGET_URL = 'https://saniapro304-byte.github.io/my-side/';
+
+        function redirectToTarget() {
+            window.location.href = TARGET_URL;
+        }
+
+        // --- ДАННЫЕ ПЕРЕВОДОВ (RU / EN) ---
+        const translations = {
+            ru: {
+                nav_home: "Главная",
+                nav_features: "Возможности",
+                nav_pricing: "Тарифы",
+                nav_support: "Поддержка",
+                btn_login: "Войти",
+                btn_register: "Регистрация",
+                hero_title_1: "Общайся больше.",
+                hero_title_2: "Побеждай с Spacegram.",
+                hero_subtitle: "Подними своё общение на новый уровень. Скорость, приватность и стиль — всё уже внутри.",
+                hero_btn_create: "Создать аккаунт",
+                hero_btn_docs: "Документация",
+                stat_active: "Активных пользователей",
+                stat_speed: "Скорость доставки",
+                stat_secure: "Шифрование данных",
+                features_tag: "Возможности",
+                features_title: "Потрясающие возможности",
+                features_subtitle: "Каждая функция — часть общей картины. Мессенджер для тех, кто ценит скорость и приватность.",
+                feat_1_title: "Мгновенные сообщения",
+                feat_1_desc: "Realtime передача данных без задержек. Ваши сообщения доставляются со скоростью света.",
+                feat_2_title: "Приватность",
+                feat_2_desc: "Ghost-режим, сквозное E2E шифрование и защита PIN-кодом для максимальной конфиденциальности.",
+                feat_3_title: "Статусы",
+                feat_3_desc: "Публикуйте яркие моменты на 24 часа: фото, видео и интерактивный текст с реакциями.",
+                feat_4_title: "Темы оформления",
+                feat_4_desc: "Более 9 уникальных тем интерфейса под любое настроение: от киберпанка до неона.",
+                feat_5_title: "Plus-подписка",
+                feat_5_desc: "Эксклюзивные анимированные стикеры, премиальные бейджи и увеличенные лимиты файлов.",
+                feat_6_title: "Боты и моды",
+                feat_6_desc: "Интеграция StalkerGram, GhostGram, AntiDelete и кастомных ботов прямо в один клик.",
+                app_tag: "Интерфейс",
+                app_title: "Все под контролем",
+                app_desc: "Интуитивный дизайн объединяет скорость и эргономику. Управляйте чатами, статусами и правами администратора в пару кликов на любом устройстве.",
+                app_feat_1: "Синхронизация чатов в реальном времени",
+                app_feat_2: "Расширенная панель администратора каналов",
+                app_feat_3: "Персонализированный профиль и кастомные статусы",
+                pricing_tag: "Тарифы",
+                pricing_title: "Выберите свой уровень",
+                pricing_subtitle: "Простые и прозрачные цены для каждого пользователя.",
+                plan_free_desc: "Для ежедневного базового общения с друзьями.",
+                plan_forever: "навсегда",
+                plan_btn_free: "Начать бесплатно",
+                plan_popular: "Популярный",
+                plan_plus_desc: "Для тех, кто хочет максимум возможностей и стиля.",
+                plan_month: "/ мес",
+                plan_btn_plus: "Выбрать Plus",
+                plan_creator_desc: "Для блогеров, админов каналов и создателей контента.",
+                plan_btn_creator: "Выбрать Creator",
+                faq_tag: "FAQ",
+                faq_title: "Ощущается так же, как и выглядит",
+                faq_subtitle: "Дизайн, который ощущается естественным. Ведь комфорт — это не только про интерфейс.",
+                faq_q1: "Какие ОС поддерживаются?",
+                faq_a1: "Web, Android, iOS. Работает везде где есть современный браузер без установки лишнего софта.",
+                faq_q2: "Как часто выходят обновления?",
+                faq_a2: "Каждую неделю. Новые фичи, багфиксы, улучшения безопасности и оптимизация скорости работы.",
+                faq_q3: "Возможен ли возврат средств?",
+                faq_a3: "Да, в течение 14 дней без лишних вопросов вернем полную сумму подписки, если вам что-то не понравится.",
+                faq_btn_support: "У меня остались вопросы",
+                cta_title: "Готов начать?",
+                cta_subtitle: "Присоединяйся к тысячам пользователей Spacegram уже сегодня.",
+                cta_btn: "Создать аккаунт бесплатно",
+                footer_desc: "Мессенджер нового поколения для тех, кто ценит максимальную скорость, абсолютную приватность и премиальный стиль.",
+                footer_rights: "Все права защищены.",
+                footer_col1_title: "Продукт",
+                footer_col2_title: "Компания",
+                footer_col3_title: "Поддержка",
+                footer_about: "О нас",
+                footer_careers: "Карьера",
+                footer_press: "Пресс-кит",
+                footer_contact: "Контакты",
+                footer_privacy: "Конфиденциальность",
+                modal_tab_login: "Вход",
+                modal_tab_register: "Регистрация",
+                modal_name: "Ваше имя",
+                modal_email: "Электронная почта",
+                modal_password: "Пароль",
+                modal_btn_login: "Войти в Spacegram",
+                modal_btn_register: "Создать аккаунт"
+            },
+            en: {
+                nav_home: "Home",
+                nav_features: "Features",
+                nav_pricing: "Pricing",
+                nav_support: "Support",
+                btn_login: "Log in",
+                btn_register: "Sign up",
+                hero_title_1: "Chat more.",
+                hero_title_2: "Win with Spacegram.",
+                hero_subtitle: "Take your communication to the next level. Speed, privacy, and style — all built-in.",
+                hero_btn_create: "Create Account",
+                hero_btn_docs: "Documentation",
+                stat_active: "Active users",
+                stat_speed: "Delivery speed",
+                stat_secure: "Data encryption",
+                features_tag: "Features",
+                features_title: "Amazing Capabilities",
+                features_subtitle: "Every feature is part of the big picture. A messenger for those who value speed and privacy.",
+                feat_1_title: "Instant Messages",
+                feat_1_desc: "Realtime data transfer without delays. Your messages are delivered at light speed.",
+                feat_2_title: "Privacy",
+                feat_2_desc: "Ghost mode, end-to-end E2E encryption and PIN protection for maximum confidentiality.",
+                feat_3_title: "Statuses",
+                feat_3_desc: "Publish highlights for 24 hours: photos, videos and interactive text with reactions.",
+                feat_4_title: "Themes",
+                feat_4_desc: "Over 9 unique interface themes for any mood: from cyberpunk to neon.",
+                feat_5_title: "Plus Subscription",
+                feat_5_desc: "Exclusive animated stickers, premium badges and increased file limits.",
+                feat_6_title: "Bots & Mods",
+                feat_6_desc: "Integration of StalkerGram, GhostGram, AntiDelete and custom bots in one click.",
+                app_tag: "Interface",
+                app_title: "Everything Under Control",
+                app_desc: "Intuitive design combines speed and ergonomics. Manage chats, statuses, and admin rights in a couple of clicks on any device.",
+                app_feat_1: "Real-time chat synchronization",
+                app_feat_2: "Advanced channel admin dashboard",
+                app_feat_3: "Personalized profile and custom statuses",
+                pricing_tag: "Pricing",
+                pricing_title: "Choose Your Tier",
+                pricing_subtitle: "Simple and transparent pricing for every user.",
+                plan_free_desc: "For daily basic communication with friends.",
+                plan_forever: "forever",
+                plan_btn_free: "Start Free",
+                plan_popular: "Popular",
+                plan_plus_desc: "For those who want maximum features and style.",
+                plan_month: "/ mo",
+                plan_btn_plus: "Get Plus",
+                plan_creator_desc: "For bloggers, channel admins, and content creators.",
+                plan_btn_creator: "Get Creator",
+                faq_tag: "FAQ",
+                faq_title: "Feels just as good as it looks",
+                faq_subtitle: "Design that feels natural. Because comfort is not just about the interface.",
+                faq_q1: "What OS are supported?",
+                faq_a1: "Web, Android, iOS. Works anywhere with a modern browser without extra software.",
+                faq_q2: "How often are updates released?",
+                faq_a2: "Every week. New features, bug fixes, security improvements, and speed optimization.",
+                faq_q3: "Is a refund possible?",
+                faq_a3: "Yes, within 14 days no questions asked we will refund the full subscription amount if you are not satisfied.",
+                faq_btn_support: "I have more questions",
+                cta_title: "Ready to start?",
+                cta_subtitle: "Join thousands of Spacegram users today.",
+                cta_btn: "Create Free Account",
+                footer_desc: "Next-gen messenger for those who value maximum speed, absolute privacy, and premium style.",
+                footer_rights: "All rights reserved.",
+                footer_col1_title: "Product",
+                footer_col2_title: "Company",
+                footer_col3_title: "Support",
+                footer_about: "About Us",
+                footer_careers: "Careers",
+                footer_press: "Press Kit",
+                footer_contact: "Contact",
+                footer_privacy: "Privacy Policy",
+                modal_tab_login: "Log in",
+                modal_tab_register: "Sign up",
+                modal_name: "Your Name",
+                modal_email: "Email Address",
+                modal_password: "Password",
+                modal_btn_login: "Log in to Spacegram",
+                modal_btn_register: "Create Account"
+            }
+        };
+
+        let currentLang = 'ru';
+
+        // Переключение языка
+        const langToggleBtn = document.getElementById('langToggle');
+        langToggleBtn.addEventListener('click', () => {
+            currentLang = currentLang === 'ru' ? 'en' : 'ru';
+            langToggleBtn.textContent = currentLang.toUpperCase();
+            updateLanguage();
+        });
+
+        function updateLanguage() {
+            const elements = document.querySelectorAll('[data-i18n]');
+            elements.forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[currentLang][key]) {
+                    el.textContent = translations[currentLang][key];
+                }
+            });
+        }
+
+        // Переключение темы (Тёмная vs Супер-тёмная)
+        const themeToggleBtn = document.getElementById('themeToggle');
+        let isSuperDark = false;
+        themeToggleBtn.addEventListener('click', () => {
+            isSuperDark = !isSuperDark;
+            if (isSuperDark) {
+                document.body.style.backgroundColor = '#000000';
+                showToast('Включен режим Super Dark (OLED)');
+            } else {
+                document.body.style.backgroundColor = '#0a0e17';
+                showToast('Включена стандартная тёмная тема');
+            }
+        });
+
+        // Мобильное меню
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        document.querySelectorAll('.mobile-link').forEach(link => {
+            link.addEventListener('click', () => mobileMenu.classList.add('hidden'));
+        });
+
+        // FAQ Аккордеон
+        function toggleFaq(button) {
+            const item = button.parentElement;
+            const isActive = item.classList.contains('active');
+            
+            // Закрыть все остальные
+            document.querySelectorAll('.faq-item').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            // Если не был активен — открыть
+            if (!isActive) {
+                item.classList.add('active');
+            }
+        }
+
+        // Модальное окно
+        let modalMode = 'login';
+        const authModal = document.getElementById('authModal');
+        const tabLogin = document.getElementById('tabLogin');
+        const tabRegister = document.getElementById('tabRegister');
+        const nameFieldContainer = document.getElementById('nameFieldContainer');
+        const authSubmitBtn = document.getElementById('authSubmitBtn');
+
+        function openModal(mode) {
+            modalMode = mode;
+            authModal.classList.remove('hidden');
+            switchTab(mode);
+        }
+
+        function closeModal() {
+            authModal.classList.add('hidden');
+        }
+
+        function switchTab(mode) {
+            modalMode = mode;
+            if (mode === 'login') {
+                tabLogin.className = "font-bold text-lg text-white border-b-2 border-accent pb-1";
+                tabRegister.className = "font-bold text-lg text-slate-400 pb-1 hover:text-white transition-colors";
+                nameFieldContainer.classList.add('hidden');
+                authSubmitBtn.textContent = translations[currentLang]['modal_btn_login'];
+            } else {
+                tabRegister.className = "font-bold text-lg text-white border-b-2 border-accent pb-1";
+                tabLogin.className = "font-bold text-lg text-slate-400 pb-1 hover:text-white transition-colors";
+                nameFieldContainer.classList.remove('hidden');
+                authSubmitBtn.textContent = translations[currentLang]['modal_btn_register'];
+            }
+        }
+
+        function handleAuthSubmit(event) {
+            event.preventDefault();
+            redirectToTarget();
+        }
+
+        // Тост уведомления
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3500);
+        }
+
+        // Intersection Observer для анимаций появления при скролле
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.reveal').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
